@@ -1,0 +1,67 @@
+{
+  "project_info": {
+    "project_number": "563766954272",
+    "project_id": "rive-app-testing",
+    "storage_bucket": "rive-app-testing.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:563766954272:android:8aae76a47cc39991932f45",
+        "android_client_info": {
+          "package_name": "com.example.rive_learning"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA4p9bR0dy2rOYfCRwOqGsnGemoYlikTag"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:563766954272:android:080596ffa0b7e0f1932f45",
+        "android_client_info": {
+          "package_name": "com.rive.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA4p9bR0dy2rOYfCRwOqGsnGemoYlikTag"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:563766954272:android:226b37277378454b932f45",
+        "android_client_info": {
+          "package_name": "com.rive_learning.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA4p9bR0dy2rOYfCRwOqGsnGemoYlikTag"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
