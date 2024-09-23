@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_image_stack/flutter_image_stack.dart';
 import 'package:rive_learning/rive_app/bottom_bar_page/home_page_content/task_view.dart';
+import 'package:rive_learning/rive_app/theme.dart';
 
 class HomePageView extends StatefulWidget {
   const HomePageView({super.key, this.settingViews});
@@ -22,10 +23,21 @@ class _HomePageViewState extends State<HomePageView>
     ExactAssetImage('assets/avaters/avatar_3.jpg', scale: 3),
   ];
 
+  List<String> taskNames = [
+    'Research for a hospital app',
+    'Landing page design',
+    'Web app design system',
+    'Dasboard design fast'
+  ];
+
+  List<bool> taskCheck = [];
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    taskCheck = List.filled(taskNames.length, false, growable: true);
+    print(taskCheck);
   }
 
   @override
@@ -54,7 +66,7 @@ class _HomePageViewState extends State<HomePageView>
                                 fontWeight: FontWeight.w700,
                                 fontFamily: 'Poppins'),
                           ),
-                          const SizedBox(height: 6),
+                          SizedBox(height: 6),
                           Text(
                             '5 tasks for you today',
                             style: TextStyle(
@@ -276,6 +288,7 @@ class _HomePageViewState extends State<HomePageView>
                     ),
                   ),
                 ),
+                const SizedBox(height: 20),
                 ListView.separated(
                   physics: const NeverScrollableScrollPhysics(),
                   shrinkWrap: true,
@@ -285,46 +298,68 @@ class _HomePageViewState extends State<HomePageView>
                       onTap: () {
                         // return ;
                       },
-                      child: Card(
-                        child: ListTile(
-                          contentPadding:
-                              const EdgeInsets.symmetric(horizontal: 8),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(16),
+                          color: Colors.white,
+                          boxShadow: [
+                            BoxShadow(
+                              color: RiveAppTheme.shadow.withOpacity(0.3),
+                              blurRadius: 6,
+                              spreadRadius: 1,
+                            )
+                          ],
+                        ),
+                        child: Card(
                           shape: RoundedRectangleBorder(
-                            side:
-                                BorderSide(color: CupertinoColors.systemGrey5),
-                            borderRadius: BorderRadius.circular(8),
+                            side: BorderSide(color: Colors.white),
+                            borderRadius: BorderRadius.circular(16),
                           ),
-                          // minLeadingWidth: 0,
-                          leading: IconButton(
-                            onPressed: () {},
-                            icon: Icon(
-                              Icons.check_circle,
-                              color: Colors.green,
+                          color: Colors.white,
+                          shadowColor: Colors.transparent,
+                          elevation: 0,
+                          child: ListTile(
+                            contentPadding:
+                                const EdgeInsets.symmetric(horizontal: 8),
+                            shape: RoundedRectangleBorder(
+                              side: BorderSide(
+                                color: CupertinoColors.systemGrey5,
+                              ),
+                              borderRadius: BorderRadius.circular(8),
                             ),
-                          ),
-                          title: const Text(
-                            'Research for a hospital app',
-                            style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w900,
-                                fontFamily: 'Inter'),
-                          ),
-                          subtitle: const Text(
-                            'Today, 03:45 PM',
-                            style: TextStyle(
-                              color: CupertinoColors.systemGrey,
-                              fontWeight: FontWeight.w700,
-                              fontFamily: 'Inter',
-                              fontSize: 13,
+                            // minLeadingWidth: 0,
+                            leading: IconButton(
+                              onPressed: () {},
+                              icon: const Icon(
+                                Icons.check_circle,
+                                color: Colors.green,
+                                size: 32,
+                              ),
                             ),
-                          ),
-                          trailing: SizedBox(
-                            width: 60,
-                            child: FlutterImageStack.providers(
-                              providers: _images,
-                              totalCount: 3,
-                              itemRadius: 60,
-                              itemBorderWidth: 3,
+                            title: Text(
+                              taskNames[index],
+                              style: const TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w900,
+                                  fontFamily: 'Inter'),
+                            ),
+                            subtitle: const Text(
+                              'Today, 03:45 PM',
+                              style: TextStyle(
+                                color: CupertinoColors.systemGrey,
+                                fontWeight: FontWeight.w700,
+                                fontFamily: 'Inter',
+                                fontSize: 13,
+                              ),
+                            ),
+                            trailing: SizedBox(
+                              width: 60,
+                              child: FlutterImageStack.providers(
+                                providers: _images,
+                                totalCount: 3,
+                                itemRadius: 60,
+                                itemBorderWidth: 3,
+                              ),
                             ),
                           ),
                         ),
@@ -334,7 +369,7 @@ class _HomePageViewState extends State<HomePageView>
                   separatorBuilder: (context, index) => const SizedBox(
                     height: 15,
                   ),
-                  itemCount: 4,
+                  itemCount: taskNames.length,
                 ),
               ],
             ),

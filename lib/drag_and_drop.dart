@@ -125,14 +125,14 @@ class _DragAnDropState extends State<DragAndDrop> {
         ),
       ),
       children: List.generate(innerList.children.length,
-          (index) => _buildItem(innerList.children[index], index)),
+          (index) => _buildItem('Research for mobile project', index)),
     );
   }
 
   _buildItem(String item, int index) {
     return DragAndDropItem(
         child: TaskCard(
-      taskInfo: TaskInfo('taskPos $index', item, 'taskSub', 0.2, 'taskStatus'),
+      taskInfo: TaskInfo('Project ${index + 1}', item, 'taskSub', 0.2, 'projectStatus'),
     ));
   }
 

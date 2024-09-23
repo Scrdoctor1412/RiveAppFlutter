@@ -48,7 +48,7 @@ class _MessageChatState extends State<MessageChat> {
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       _scrollController.scrollTo(
         index: 99999,
-        duration: Duration(milliseconds: 500),
+        duration: const Duration(milliseconds: 500),
       );
     });
   }
@@ -76,7 +76,7 @@ class _MessageChatState extends State<MessageChat> {
   }
 
   void scrollToIndex() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance(); 
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
     int index = await prefs.getInt('messageIndex')!;
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       _scrollController.scrollTo(
@@ -119,7 +119,7 @@ class _MessageChatState extends State<MessageChat> {
               padding: const EdgeInsets.symmetric(horizontal: 12),
               height: MediaQuery.of(context).viewInsets.bottom > 0
                   ? 707 - 179 - 132 - 25
-                  : 707,
+                  : 707 - 79,
               child: _buildMessageList(),
             ),
             // TextField(),
@@ -131,7 +131,7 @@ class _MessageChatState extends State<MessageChat> {
                     onPressed: () {
                       _pickImageFromGallery();
                     },
-                    icon: Icon(
+                    icon: const Icon(
                       Icons.attach_file,
                       color: CupertinoColors.systemBlue,
                     )),
@@ -151,7 +151,7 @@ class _MessageChatState extends State<MessageChat> {
                 ),
                 IconButton(
                   onPressed: sendMessage,
-                  icon: Icon(
+                  icon: const Icon(
                     Icons.send,
                     color: CupertinoColors.systemBlue,
                   ),
@@ -167,7 +167,9 @@ class _MessageChatState extends State<MessageChat> {
   Widget _buildNavBar() {
     return StreamBuilder(
       stream: _chatService.getMessages(
-          widget.receiverUserID, _firebaseAuth.currentUser!.uid),
+        widget.receiverUserID,
+        _firebaseAuth.currentUser!.uid,
+      ),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return Text('Error for real: ${snapshot.error}');
@@ -186,7 +188,7 @@ class _MessageChatState extends State<MessageChat> {
                 color: RiveAppTheme.shadow.withOpacity(0.3),
                 spreadRadius: 0.1,
                 blurRadius: 6,
-                offset: Offset(0, 8))
+                offset: const Offset(0, 8))
           ]),
           child: Row(
             children: [
@@ -194,14 +196,14 @@ class _MessageChatState extends State<MessageChat> {
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
-                icon: Icon(
+                icon: const Icon(
                   Icons.arrow_back,
                   color: CupertinoColors.systemBlue,
                 ),
               ),
               const SizedBox(width: 16),
               ClipRRect(
-                borderRadius: BorderRadius.all(Radius.circular(32)),
+                borderRadius: const BorderRadius.all(Radius.circular(32)),
                 child: Image.asset(
                   'assets/avaters/avatar_1.jpg',
                   width: 42,
@@ -215,51 +217,52 @@ class _MessageChatState extends State<MessageChat> {
                     width: 100,
                     child: Text(
                       widget.receiverUserEmail,
-                      style:
-                          TextStyle(fontWeight: FontWeight.w900, fontSize: 19),
+                      style: const TextStyle(
+                          fontWeight: FontWeight.w900, fontSize: 19),
                       // softWrap: true,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  Text('Active'),
+                  const Text('Active'),
                 ],
               ),
               const Spacer(),
               IconButton(
                   onPressed: () {},
-                  icon: Icon(
+                  icon: const Icon(
                     Icons.phone,
                     color: CupertinoColors.systemBlue,
                   )),
-              const SizedBox(width: 12),
+              //const SizedBox(width: 12),
               IconButton(
                   onPressed: () {},
-                  icon: Icon(
+                  icon: const Icon(
                     Icons.video_camera_back,
                     color: CupertinoColors.systemBlue,
                   )),
-              const SizedBox(width: 12),
+              //const SizedBox(width: 12),
               IconButton(
-                  onPressed: () {
-                    Navigator.of(context)
-                        .push(
-                      MaterialPageRoute(
-                          builder: (context) => MessageMore(
-                                currentUserId: _firebaseAuth.currentUser!.uid,
-                                receiverUserId: widget.receiverUserID,
-                              ),
-                          settings: RouteSettings(name: '/', arguments: Map())),
-                    )
-                        .then((value) {
-                      testingPrefs();
-                      scrollToIndex();
-                    });
-                  },
-                  icon: Icon(
-                    Icons.info,
-                    color: CupertinoColors.systemBlue,
-                  )),
-              const SizedBox(width: 12),
+                onPressed: () {
+                  Navigator.of(context)
+                      .push(
+                    MaterialPageRoute(
+                        builder: (context) => MessageMore(
+                              currentUserId: _firebaseAuth.currentUser!.uid,
+                              receiverUserId: widget.receiverUserID,
+                            ),
+                        settings: RouteSettings(name: '/', arguments: Map())),
+                  )
+                      .then((value) {
+                    testingPrefs();
+                    scrollToIndex();
+                  });
+                },
+                icon: const Icon(
+                  Icons.info,
+                  color: CupertinoColors.systemBlue,
+                ),
+              ),
+              //const SizedBox(width: 12),
             ],
           ),
         );

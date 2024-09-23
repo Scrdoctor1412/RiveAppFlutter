@@ -105,10 +105,10 @@ class _MessagePageViewState extends State<MessagePageView>
                                       child: Image.asset(
                                           'assets/avaters/avatar_1.jpg',
                                           width: 60)),
-                                  const Text(
-                                    'Hello world',
+                                  Text(
+                                    'User ${index+1}',
                                     style:
-                                        TextStyle(fontWeight: FontWeight.w500),
+                                        const TextStyle(fontWeight: FontWeight.w500),
                                   )
                                 ],
                               );
