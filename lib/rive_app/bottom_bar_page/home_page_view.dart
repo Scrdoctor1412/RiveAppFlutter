@@ -335,16 +335,20 @@ class _HomePageViewState extends State<HomePageView>
           child: ListTile(
             contentPadding: const EdgeInsets.symmetric(horizontal: 8),
             shape: RoundedRectangleBorder(
-              side: BorderSide(
+              side: const BorderSide(
                 color: CupertinoColors.systemGrey5,
               ),
               borderRadius: BorderRadius.circular(8),
             ),
             // minLeadingWidth: 0,
             leading: IconButton(
-              onPressed: () {},
-              icon: const Icon(
-                Icons.check_circle,
+              onPressed: () {
+                setState(() {
+                  taskCheck[index] = !taskCheck[index];
+                });
+              },
+              icon: Icon(
+                taskCheck[index] ? Icons.check_circle : Icons.circle_outlined,
                 color: Colors.green,
                 size: 32,
               ),

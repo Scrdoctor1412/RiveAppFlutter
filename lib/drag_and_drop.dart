@@ -35,14 +35,15 @@ class _DragAnDropState extends State<DragAndDrop> {
   void initState() {
     super.initState();
 
-    _lists = List.generate(2 /*2 columns */, (outerIndex) {
-      return InnerList(
-        name: outerIndex.toString(),
-        children: List.generate(
-            outerIndex == 0 ? _inWorkList.length : _completedList.length,
-            (innerIndex) => '$outerIndex.$innerIndex'),
-      );
-    });
+    // _lists = List.generate(2 /*2 columns */, (outerIndex) {
+    //   return InnerList(
+    //     name: outerIndex.toString(),
+    //     children: List.generate(
+    //         outerIndex == 0 ? _inWorkList.length : _completedList.length,
+    //         (innerIndex) => '$outerIndex.$innerIndex'),
+    //   );
+    // });
+    _lists = [];
 
     initProjects();
   }
@@ -74,7 +75,6 @@ class _DragAnDropState extends State<DragAndDrop> {
     await _projectService.getAllProjects2().then((querySnapshot) {
       print("Successfully completed");
       for (var docSnapshot in querySnapshot.docs) {
-        print('${docSnapshot.id} => ${docSnapshot.data()['projectName']}');
         _projectList.add(docSnapshot.data());
         print('success');
       }
@@ -165,21 +165,31 @@ class _DragAnDropState extends State<DragAndDrop> {
   }
 
   _buildItem(String item, int index) {
-    final _projecGet = _projectList[index];
-    final project = Project(projectPosition: _projecGet['projectPosition'], projectName: _projecGet['projectName'], projectDesc: _projecGet['projectDesc'], projectUrgent: _projecGet['projectUrgent'], projectFinished: _projecGet['projectFinished'], timeStamp: _projecGet['timeStamp']);
+    var project;
+    // print('index cc: $index');
+    if (_projectList.isNotEmpty) {
+      final _projecGet = _projectList[index];
+      project = Project(
+          projectPosition: _projecGet['projectPosition'],
+          projectName: _projecGet['projectName'],
+          projectDesc: _projecGet['projectDesc'],
+          projectUrgent: _projecGet['projectUrgent'],
+          projectFinished: _projecGet['projectFinished'],
+          timeStamp: _projecGet['timeStamp']);
+    }
+
     return DragAndDropItem(
-      // child: TaskCard(
-      //   project: Project(
-      //     projectPosition: 'Dev',
-      //     projectName: 'Hello World',
-      //     projectDesc: 'testing dart and flutter',
-      //     projectUrgent: 'low',
-      //     projectFinished: false,
-      //     timeStamp: Timestamp.now(),
-      //   ),
-      // ),
-      child: TaskCard(project: project)
-    );
+        // child: TaskCard(
+        //   project: Project(
+        //     projectPosition: 'Dev',
+        //     projectName: 'Hello World',
+        //     projectDesc: 'testing dart and flutter',
+        //     projectUrgent: 'low',
+        //     projectFinished: false,
+        //     timeStamp: Timestamp.now(),
+        //   ),
+        // ),
+        child: TaskCard(project: project));
   }
 
   _onItemReorder(
@@ -229,10 +239,19 @@ class _DragAnDropState extends State<DragAndDrop> {
   void addProject(Project newProject) async {
     await _projectService.addProject(newProject);
 
-    int lastIndex = _lists[0].children.length;
-    setState(() {
-      _lists[0].children.insert(lastIndex, "test");
+    await _projectService.getAllProjects2().then((querySnapshot) {
+      print("Successfully completed");
+      for (var docSnapshot in querySnapshot.docs) {
+        _projectList.add(docSnapshot.data());
+        print('success');
+      }
+      int lastIndex = _lists[0].children.length;
+
+      setState(() {
+        _lists[0].children.insert(lastIndex, "element");
+      });
     });
+
   }
 
   void _toNewProject() async {
