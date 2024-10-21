@@ -119,7 +119,7 @@ class _MessageChatState extends State<MessageChat> {
               padding: const EdgeInsets.symmetric(horizontal: 12),
               height: MediaQuery.of(context).viewInsets.bottom > 0
                   ? 707 - 179 - 132 - 25
-                  : 707 - 79,
+                  : 707,
               child: _buildMessageList(),
             ),
             // TextField(),

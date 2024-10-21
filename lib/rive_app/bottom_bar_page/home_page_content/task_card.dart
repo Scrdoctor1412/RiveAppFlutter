@@ -1,13 +1,13 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_image_stack/flutter_image_stack.dart';
-import 'package:rive_learning/rive_app/models/task_info.dart';
+import 'package:rive_learning/rive_app/models/project_info.dart';
 import 'package:rive_learning/rive_app/theme.dart';
 
 class TaskCard extends StatelessWidget {
-  const TaskCard({Key? key, required this.taskInfo}) : super(key: key);
+  const TaskCard({Key? key, required this.project}) : super(key: key);
 
-  final TaskInfo taskInfo;
+  final Project project;
 
   @override
   Widget build(BuildContext context) {
@@ -40,14 +40,17 @@ class TaskCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(24),
                   color: Colors.orange
                 ),
-                child: Text(taskInfo.taskPosition!, style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),),
+                child: Text(project.projectPosition, style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),),
               ),
               const SizedBox(height: 24),
-              Text(taskInfo.taskTitle!, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, fontFamily: 'Inter'),),
+              
+              //project name
+              Text(project.projectName, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900, fontFamily: 'Inter'),),
               const SizedBox(height: 20),
-              Text(taskInfo.taskSubtitle!, style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: CupertinoColors.systemGrey),),
+              //project subtitle 
+              Text(project.projectDesc, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: CupertinoColors.systemGrey),),
               const SizedBox(height: 16),
-              Row(
+              const Row(
                 children: [
                   Text('Progress', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16, fontFamily: 'Inter'),),
                   const Spacer(),
@@ -55,8 +58,9 @@ class TaskCard extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 10),
+              //project progress
               LinearProgressIndicator(
-                value: taskInfo.taskProgressValue,
+                value: 3,
                 color: Colors.green,
               ),
               const SizedBox(height: 15),
@@ -113,7 +117,7 @@ class TaskCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(24),
                       color: CupertinoColors.systemGrey5
                     ),
-                    child: Text(taskInfo.taskStatus!, style: TextStyle(color: CupertinoColors.systemGrey, fontWeight: FontWeight.w900),),
+                    child: Text(project.projectUrgent, style: TextStyle(color: CupertinoColors.systemGrey, fontWeight: FontWeight.w900),),
                   )
                 ],
               )

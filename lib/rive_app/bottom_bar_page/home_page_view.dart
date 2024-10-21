@@ -189,12 +189,7 @@ class _HomePageViewState extends State<HomePageView>
                                             const Spacer(),
                                             IconButton(
                                               padding: const EdgeInsets.all(0),
-                                              onPressed: () {
-                                                Navigator.of(context).push(
-                                                    MaterialPageRoute(
-                                                        builder: (context) =>
-                                                            const TaskView()));
-                                              },
+                                              onPressed: () {},
                                               icon: const Icon(
                                                 Icons.more_horiz,
                                                 color: Colors.white,
@@ -293,85 +288,91 @@ class _HomePageViewState extends State<HomePageView>
                   physics: const NeverScrollableScrollPhysics(),
                   shrinkWrap: true,
                   padding: const EdgeInsets.only(left: 24, right: 24),
-                  itemBuilder: (context, index) {
-                    return GestureDetector(
-                      onTap: () {
-                        // return ;
-                      },
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(16),
-                          color: Colors.white,
-                          boxShadow: [
-                            BoxShadow(
-                              color: RiveAppTheme.shadow.withOpacity(0.3),
-                              blurRadius: 6,
-                              spreadRadius: 1,
-                            )
-                          ],
-                        ),
-                        child: Card(
-                          shape: RoundedRectangleBorder(
-                            side: BorderSide(color: Colors.white),
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          color: Colors.white,
-                          shadowColor: Colors.transparent,
-                          elevation: 0,
-                          child: ListTile(
-                            contentPadding:
-                                const EdgeInsets.symmetric(horizontal: 8),
-                            shape: RoundedRectangleBorder(
-                              side: BorderSide(
-                                color: CupertinoColors.systemGrey5,
-                              ),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            // minLeadingWidth: 0,
-                            leading: IconButton(
-                              onPressed: () {},
-                              icon: const Icon(
-                                Icons.check_circle,
-                                color: Colors.green,
-                                size: 32,
-                              ),
-                            ),
-                            title: Text(
-                              taskNames[index],
-                              style: const TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w900,
-                                  fontFamily: 'Inter'),
-                            ),
-                            subtitle: const Text(
-                              'Today, 03:45 PM',
-                              style: TextStyle(
-                                color: CupertinoColors.systemGrey,
-                                fontWeight: FontWeight.w700,
-                                fontFamily: 'Inter',
-                                fontSize: 13,
-                              ),
-                            ),
-                            trailing: SizedBox(
-                              width: 60,
-                              child: FlutterImageStack.providers(
-                                providers: _images,
-                                totalCount: 3,
-                                itemRadius: 60,
-                                itemBorderWidth: 3,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    );
-                  },
+                  itemBuilder: _buildTaskItem,
                   separatorBuilder: (context, index) => const SizedBox(
                     height: 15,
                   ),
                   itemCount: taskNames.length,
                 ),
               ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTaskItem(BuildContext context, int index) {
+    return GestureDetector(
+      onTap: () {
+        // return ;
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => const TaskView(),
+          ),
+        );
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: RiveAppTheme.shadow.withOpacity(0.3),
+              blurRadius: 6,
+              spreadRadius: 1,
+            )
+          ],
+        ),
+        child: Card(
+          shape: RoundedRectangleBorder(
+            side: BorderSide(color: Colors.white),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          color: Colors.white,
+          shadowColor: Colors.transparent,
+          elevation: 0,
+          child: ListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+            shape: RoundedRectangleBorder(
+              side: BorderSide(
+                color: CupertinoColors.systemGrey5,
+              ),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            // minLeadingWidth: 0,
+            leading: IconButton(
+              onPressed: () {},
+              icon: const Icon(
+                Icons.check_circle,
+                color: Colors.green,
+                size: 32,
+              ),
+            ),
+            title: Text(
+              taskNames[index],
+              style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w900,
+                  fontFamily: 'Inter'),
+            ),
+            subtitle: const Text(
+              'Today, 03:45 PM',
+              style: TextStyle(
+                color: CupertinoColors.systemGrey,
+                fontWeight: FontWeight.w700,
+                fontFamily: 'Inter',
+                fontSize: 13,
+              ),
+            ),
+            trailing: SizedBox(
+              width: 60,
+              child: FlutterImageStack.providers(
+                providers: _images,
+                totalCount: 3,
+                itemRadius: 60,
+                itemBorderWidth: 3,
+              ),
             ),
           ),
         ),
