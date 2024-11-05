@@ -59,7 +59,8 @@ class _SigninViewState extends State<SigninView> {
     });
 
     try{
-      await authService.signInWithEmailandPassword(_emailController.text, _passwordController.text);
+      var a = await authService.signInWithEmailandPassword(_emailController.text, _passwordController.text);
+      // print(a.)
     }catch(e){
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
     }

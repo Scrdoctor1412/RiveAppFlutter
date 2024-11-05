@@ -5,7 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:rive_learning/rive_app/bottom_bar_page/home_page_content/task_card.dart';
 import 'package:rive_learning/rive_app/models/project_info.dart';
-import 'package:rive_learning/rive_app/new_project_view.dart';
+import 'package:rive_learning/rive_app/add_new_view/new_project_view.dart';
 import 'package:rive_learning/rive_app/services/project/project_service.dart';
 
 class DragAndDrop extends StatefulWidget {
@@ -34,43 +34,9 @@ class _DragAnDropState extends State<DragAndDrop> {
   void initState() {
     super.initState();
 
-    // _lists = List.generate(2 /*2 columns */, (outerIndex) {
-    //   return InnerList(
-    //     name: outerIndex.toString(),
-    //     children: List.generate(
-    //         outerIndex == 0 ? _inWorkList.length : _completedList.length,
-    //         (innerIndex) => '$outerIndex.$innerIndex'),
-    //   );
-    // });
     _lists = [];
 
     initProjects();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: Padding(
-        padding: const EdgeInsets.only(left: 12),
-        child: DragAndDropLists(
-          children: List.generate(_lists.length, (index) => _buildList(index)),
-          itemTargetOnAccept: (incoming, parentList, target) {
-            print('lmao');
-          },
-          onItemReorder: _onItemReorder,
-          onListReorder: _onListReorder,
-          axis: Axis.horizontal,
-          listWidth: 320,
-          listDraggingWidth: 320,
-          listPadding: const EdgeInsets.all(10.0),
-          listDecoration: BoxDecoration(
-              color: Color.fromARGB(20, 50, 173, 230),
-              border: Border.all(color: Colors.transparent),
-              borderRadius: BorderRadius.circular(24)),
-        ),
-      ),
-    );
   }
 
   void initProjects() async {
@@ -101,6 +67,32 @@ class _DragAnDropState extends State<DragAndDrop> {
         });
       });
     });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: Padding(
+        padding: const EdgeInsets.only(left: 12),
+        child: DragAndDropLists(
+          children: List.generate(_lists.length, (index) => _buildList(index)),
+          itemTargetOnAccept: (incoming, parentList, target) {
+            print('lmao');
+          },
+          onItemReorder: _onItemReorder,
+          onListReorder: _onListReorder,
+          axis: Axis.horizontal,
+          listWidth: 320,
+          listDraggingWidth: 320,
+          listPadding: const EdgeInsets.all(10.0),
+          listDecoration: BoxDecoration(
+              color: Color.fromARGB(20, 50, 173, 230),
+              border: Border.all(color: Colors.transparent),
+              borderRadius: BorderRadius.circular(24)),
+        ),
+      ),
+    );
   }
 
   _buildList(int outerIndex) {
@@ -161,36 +153,36 @@ class _DragAnDropState extends State<DragAndDrop> {
               : outerIndex == 0
                   ? _buildAddProject()
                   : null),
-      children: List.generate(innerList.children.length,
-          (index) => _buildItem('Research for mobile project', index)),
+      children: List.generate(
+          innerList.children.length,
+          (index) =>
+              _buildItem('Research for mobile project', index, outerIndex)),
     );
   }
 
-  _buildItem(String item, int index) {
+  _buildItem(String item, int index, int columnIndex) {
+    print('column index: $columnIndex');
     var project;
     if (_projectList.isNotEmpty) {
-      final _projecGet = _projectList[index];
+      var _projectGet;
+      // _projectGet = columnIndex == 0 ? _inWorkList[index] : _completedList[index];
+      if (columnIndex == 0) {
+        _projectGet = _inWorkList[index];
+      } else {
+        if (_completedList.isNotEmpty) {
+          _projectGet = _completedList[index];
+        }
+      }
       project = Project(
-          projectPosition: _projecGet['projectPosition'],
-          projectName: _projecGet['projectName'],
-          projectDesc: _projecGet['projectDesc'],
-          projectUrgent: _projecGet['projectUrgent'],
-          projectFinished: _projecGet['projectFinished'],
-          timeStamp: _projecGet['timeStamp']);
+        projectPosition: _projectGet['projectPosition'],
+        projectName: _projectGet['projectName'],
+        projectDesc: _projectGet['projectDesc'],
+        projectUrgent: _projectGet['projectUrgent'],
+        projectFinished: _projectGet['projectFinished'],
+        timeStamp: _projectGet['timeStamp'],
+      );
     }
-
-    return DragAndDropItem(
-        // child: TaskCard(
-        //   project: Project(
-        //     projectPosition: 'Dev',
-        //     projectName: 'Hello World',
-        //     projectDesc: 'testing dart and flutter',
-        //     projectUrgent: 'low',
-        //     projectFinished: false,
-        //     timeStamp: Timestamp.now(),
-        //   ),
-        // ),
-        child: TaskCard(project: project));
+    return DragAndDropItem(child: TaskCard(project: project));
   }
 
   _onItemReorder(
@@ -198,7 +190,26 @@ class _DragAnDropState extends State<DragAndDrop> {
     setState(() {
       var movedItem = _lists[oldListIndex].children.removeAt(oldItemIndex);
       // _lists[newListIndex].children.insert(newItemIndex, movedItem);
-      _lists[newListIndex].children.insert(newItemIndex, 'element ${oldItemIndex}');
+      print('old item index: $oldItemIndex');
+      print('new item index: $newItemIndex');
+      _lists[newListIndex]
+          .children
+          .insert(newItemIndex, movedItem); //drag n drop list
+
+      if(oldListIndex == newListIndex){
+        return;
+      }
+      else if (oldListIndex == 0) {
+        _inWorkList[oldItemIndex]['projectFinished'] = true;
+        _completedList.insert(
+            newItemIndex, _inWorkList[oldItemIndex]); //complete list
+        _inWorkList.removeAt(oldItemIndex);
+      }else if(oldListIndex == 1){
+        _inWorkList[oldItemIndex]['projectFinished'] = false;
+        _inWorkList.insert(
+            newItemIndex, _inWorkList[oldItemIndex]); //complete list
+        _completedList.removeAt(oldItemIndex);
+      }
     });
   }
 
@@ -247,13 +258,20 @@ class _DragAnDropState extends State<DragAndDrop> {
         _projectList.add(docSnapshot.data());
         print('success');
       }
-      int lastIndex = _lists[0].children.length;
+      // int lastIndex = _lists[0].children.length;
 
       setState(() {
-        _lists[0].children.insert(lastIndex, "element ${lastIndex}");
+        // _lists[0].children.insert(0, newProject.toString());
+        _lists.clear();
+        _projectList.clear();
+        _inWorkList.clear();
+        _completedList.clear();
+        initProjects();
+
+        // _lists[0].children.add(newProject.toString());
+        // _inWorkList.add(newProject as Map<String, dynamic>);
       });
     });
-
   }
 
   void _toNewProject() async {

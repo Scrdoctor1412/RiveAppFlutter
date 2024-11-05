@@ -23,48 +23,53 @@ class ProjectService extends ChangeNotifier {
         .collection('projects')
         .doc(Uuid().v4())
         .set(project.toMap());
-        // .add(project.toMap());
+    // .add(project.toMap());
+  }
+
+  //DELETE PROJECT
+  Future<void> deleteProject(String projectId) async {
+    final String currentUserId = _firebaseAuth.currentUser!.uid;
+    await _firestore
+        .collection('project_store')
+        .doc(currentUserId)
+        .collection('projects')
+        .doc(projectId)
+        .delete()
+        .then(
+          (doc) => print('Project deleted'),
+          onError: (e) => print("Error deleting document"),
+        );
+  }
+
+  //UPDATE PROJECT
+  Future<void> updateProject(String projectId, Project projectUpdate) async {
+    final String currentUserId = _firebaseAuth.currentUser!.uid;
+    await _firestore
+        .collection('project_store')
+        .doc(currentUserId)
+        .collection('projects')
+        .doc(projectId)
+        .update({
+      "projectName": projectUpdate.projectName,
+      "projectPosition": projectUpdate.projectPosition,
+      "projectDesc": projectUpdate.projectDesc,
+      "projectUrgent": projectUpdate.projectUrgent,
+      "projectFinished": projectUpdate.projectFinished,
+      "timeStamp": projectUpdate.timeStamp,
+    }).then(
+      (doc) => print('Project updated'),
+      onError: (e) => print("Error deleting document"),
+    );
   }
 
   //GET PROJECTS
-  // Stream<QuerySnapshot> getProjects(String userId) {
-  //   return _firestore
-  //       .collection('project_store')
-  //       .doc(userId)
-  //       .collection('projects')
-  //       .orderBy('timeStamp', descending: true)
-  //       .snapshots();
-  // }
-
-  // List<Map<String, dynamic>> getAllProjects(String userId) {
-  //   List<Map<String, dynamic>> temp = [];
-  //   _firestore
-  //       .collection('project_store')
-  //       .doc(userId)
-  //       .collection('projects')
-  //       .get()
-  //       .then(
-  //     (querySnapshot) {
-  //       print("Successfully completed");
-  //       for (var docSnapshot in querySnapshot.docs) {
-  //         // print('${docSnapshot.id} => ${docSnapshot.data()}');
-  //         print('success');
-  //         temp.add(docSnapshot.data());
-  //         print(temp[0]);
-  //       }
-  //     },
-  //     onError: (e) => print("error: $e"),
-  //   );
-  //   return temp;
-  // }
-
   Future<QuerySnapshot<Map<String, dynamic>>> getAllProjects2() async {
     final String currentUserId = _firebaseAuth.currentUser!.uid;
     return await _firestore
         .collection('project_store')
         .doc(currentUserId)
         .collection('projects')
-        .orderBy('timeStamp', descending: false)
+        .orderBy('timeStamp', descending: true)
         .get();
   }
 }

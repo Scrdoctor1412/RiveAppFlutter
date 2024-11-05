@@ -26,15 +26,6 @@ class TaskService extends ChangeNotifier {
   }
 
   //GET TASKS
-  Stream<QuerySnapshot> getTasks(String userId, String projectId) {
-    return _firestore
-        .collection('project_store')
-        .doc(userId)
-        .collection('projects')
-        .orderBy('timeStamp', descending: false)
-        .snapshots();
-  }
-
   Future<QuerySnapshot<Map<String, dynamic>>> getTasks2(String projectId) {
     final String currentUserId = _firebaseAuth.currentUser!.uid;
     return _firestore
@@ -43,7 +34,22 @@ class TaskService extends ChangeNotifier {
         .collection('projects')
         .doc(projectId)
         .collection('tasks')
-        .orderBy('timeStamp', descending: false)
+        // .orderBy('timeStamp', descending: false)
+        .get();
+  }
+
+  //GET ALL SUBTASK FROM A TASK
+  Future<QuerySnapshot<Map<String, dynamic>>> getSubTask(String projectId, String taskId) {
+    final String currentUserId = _firebaseAuth.currentUser!.uid;
+    return _firestore
+        .collection('project_store')
+        .doc(currentUserId)
+        .collection('projects')
+        .doc(projectId)
+        .collection('tasks')
+        .doc(taskId)
+        .collection('subtasks')
+        .orderBy('timeStamp', descending: true)
         .get();
   }
 
@@ -60,6 +66,7 @@ class TaskService extends ChangeNotifier {
         .collection('tasks')
         .doc(taskId)
         .collection('subtasks')
-        .add(subTask.toMap());
-  }
+        .doc(Uuid().v4())
+        .set(subTask.toMap());
+      }
 }

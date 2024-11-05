@@ -26,7 +26,7 @@ class MessageChat extends StatefulWidget {
 
 class _MessageChatState extends State<MessageChat> {
   final TextEditingController _messageController = TextEditingController();
-  final ItemScrollController _scrollController = ItemScrollController();
+  ItemScrollController _scrollController = ItemScrollController();
   final ChatService _chatService = ChatService();
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
   File? _selectedImage;
@@ -86,16 +86,13 @@ class _MessageChatState extends State<MessageChat> {
     });
   }
 
+  
+
   @override
   void initState() {
     // TODO: implement initState
+    _scrollController = ItemScrollController();
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      _scrollController.scrollTo(
-        index: 99999,
-        duration: Duration(milliseconds: 100),
-      );
-    });
   }
 
   @override
@@ -287,6 +284,8 @@ class _MessageChatState extends State<MessageChat> {
           height: 200,
           child: ScrollablePositionedList.builder(
             itemScrollController: _scrollController,
+            initialScrollIndex: 9999,
+            // reverse: true,
             itemBuilder: (context, index) {
               return _buildMessageItem(snapshot.data!.docs[index]);
             },

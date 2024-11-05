@@ -115,17 +115,28 @@ class _TestingGetFirebaseState extends State<TestingGetFirebase> {
     );
   }
 
+  List<String> idList = [
+    '58420bee-8d5e-4627-9341-2fbfa10b1c97',
+    '5bc4db8b-f508-4e14-8c35-2143390b58ea',
+    '29d5945c-2887-49db-9206-3339fbbcd887'
+  ];
+
   void testingGetTasks() async {
     final String currentUserId = _firebaseAuth.currentUser!.uid;
-    await _taskService.getTasks2('jKeMZdu58Tt9anzCeZOn').then((querySnapshot) {
-      print('Successfully');
-      for (var docSnapshot in querySnapshot.docs) {
-        print('${docSnapshot.id} => ${docSnapshot.data()['taskId']}');
-        // print(docSnapshot
-        // _list.add(docSnapshot.data());
-        print('success');
-      }
-    });
+    for (var id in idList) {
+      await _taskService
+          .getTasks2(id)
+          .then((querySnapshot) {
+        print('Successfully');
+        print('id: $id');
+        for (var docSnapshot in querySnapshot.docs) {
+          print('${docSnapshot.id} => ${docSnapshot.data()['taskId']}');
+          // print(docSnapshot
+          // _list.add(docSnapshot.data());
+          print('success');
+        }
+      });
+    }
   }
 
   void testingAddSubTask() async {

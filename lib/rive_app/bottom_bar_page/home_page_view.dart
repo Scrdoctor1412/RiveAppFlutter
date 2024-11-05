@@ -3,10 +3,11 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_image_stack/flutter_image_stack.dart';
 import 'package:intl/intl.dart';
+import 'package:rive_learning/rive_app/add_new_view/new_project_view.dart';
 import 'package:rive_learning/rive_app/bottom_bar_page/home_page_content/task_view.dart';
 import 'package:rive_learning/rive_app/models/project_info.dart';
 import 'package:rive_learning/rive_app/models/task.dart';
-import 'package:rive_learning/rive_app/new_task_view.dart';
+import 'package:rive_learning/rive_app/add_new_view/new_task_view.dart';
 import 'package:rive_learning/rive_app/services/project/project_service.dart';
 import 'package:rive_learning/rive_app/services/task/task_service.dart';
 import 'package:rive_learning/rive_app/theme.dart';
@@ -24,8 +25,7 @@ class HomePageView extends StatefulWidget {
   }
 }
 
-class _HomePageViewState extends State<HomePageView>
-    with SingleTickerProviderStateMixin {
+class _HomePageViewState extends State<HomePageView> {
   final ProjectService _projectService = ProjectService();
   final TaskService _taskService = TaskService();
 
@@ -47,6 +47,7 @@ class _HomePageViewState extends State<HomePageView>
   List<String> _projectsSnapId = [];
   List<String> _tasksSnapId = [];
   List<List<ProjectTask>> _tasks = [];
+  List<Map<String, List<ProjectTask>>> _tasksDict = [];
 
   int projectIndex = 0;
 
@@ -54,7 +55,36 @@ class _HomePageViewState extends State<HomePageView>
   void initState() {
     // TODO: implement initState
     super.initState();
+    // _projectsSnapId = [];
+    // _tasks = [];
+    init();
+  }
+
+  void init() async {
     initProjects();
+
+    Future.delayed(const Duration(seconds: 1)).then((val) async => {
+          for (var id in _projectsSnapId)
+            {
+              await _taskService.getTasks2(id).then((QuerySnapshot) {
+                List<ProjectTask> tempList = [];
+                print('Successflly');
+                for (var docSnapShot in QuerySnapshot.docs) {
+                  var tempVar = ProjectTask(
+                      taskId: docSnapShot.data()['taskId'],
+                      taskName: docSnapShot.data()['taskName'],
+                      taskFinished: docSnapShot.data()['taskFinished'],
+                      timeStamp: docSnapShot.data()['timeStamp']);
+                  print(tempVar.taskName);
+                  _tasksSnapId.add(docSnapShot.id);
+                  tempList.add(tempVar);
+                }
+                setState(() {
+                  _tasks.add(tempList);
+                });
+              })
+            }
+        });
   }
 
   void initProjects() async {
@@ -74,40 +104,9 @@ class _HomePageViewState extends State<HomePageView>
           ),
         );
         _projectsSnapId.add(docSnapshot.id);
-        print(docSnapshot.id);
         //Add tasks of a project to a list
-        initProjectTasks(docSnapshot.id);
+        // initProjectTasks(docSnapshot.id);
       }
-      setState(() {
-        //code
-        // projectIndex = 0;
-        // initProjectTasks(_projectsSnapId[projectIndex]);
-      });
-    });
-  }
-
-  void initProjectTasks(String projectId) async {
-    await _taskService.getTasks2(projectId).then((querySnapshot) {
-      List<ProjectTask> temp = [];
-      print("Successfully completed tasks");
-      for (var docSnapshot in querySnapshot.docs) {
-        var data = docSnapshot.data();
-        print('data task id: ${docSnapshot.id}');
-        temp.add(
-          ProjectTask(
-            taskId: data['taskId'],
-            taskName: data['taskName'],
-            taskFinished: data['taskFinished'],
-            timeStamp: data['timeStamp'],
-          ),
-        );
-        _tasksSnapId.add(docSnapshot.id);
-      }
-      _tasks.add(temp);
-    });
-    print(_tasks);
-    setState(() {
-
     });
   }
 
@@ -129,9 +128,12 @@ class _HomePageViewState extends State<HomePageView>
         return Padding(
           padding: MediaQuery.of(context).viewInsets,
           child: Container(
-            child: const FractionallySizedBox(
+            child: FractionallySizedBox(
               heightFactor: 0.4,
-              child: NewTaskView(),
+              child: NewTaskView(
+                projectsId: _projectsSnapId,
+                tasksId: _tasksSnapId,
+              ),
             ),
           ),
         );
@@ -147,6 +149,51 @@ class _HomePageViewState extends State<HomePageView>
     // final newProject = res as Project;
     // print(newProject.projectName);
     // addProject(newProject);
+  }
+
+  void _deleteProject() async {
+    await _projectService
+        .deleteProject(_projectsSnapId[projectIndex])
+        .then((_) => {
+              ScaffoldMessenger.of(context)
+                  .showSnackBar(SnackBar(content: Text("delete successfully"))),
+            });
+    setState(() {
+      print('nani');
+      _projects.removeAt(projectIndex);
+      _tasks.removeAt(projectIndex);
+      _projectsSnapId.removeAt(projectIndex);
+      _tasksSnapId.removeAt(projectIndex);
+    });
+  }
+
+  void _updateProject() async {
+    final dynamic res = await showModalBottomSheet(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (context) {
+        return Padding(
+          padding: MediaQuery.of(context).viewInsets,
+          child: Container(
+            child: FractionallySizedBox(
+              heightFactor: 0.6,
+              child: NewProjectView(),
+            ),
+          ),
+        );
+      },
+      backgroundColor: Colors.white,
+    );
+
+    if (!context.mounted) return;
+    final newProject = res as Project;
+    await _projectService.updateProject(
+        _projectsSnapId[projectIndex], newProject).then((_) => {
+         ScaffoldMessenger.of(context)
+                  .showSnackBar(SnackBar(content: Text("update successfully"))), 
+        });
+    setState(() { init(); });
   }
 
   @override
@@ -296,143 +343,187 @@ class _HomePageViewState extends State<HomePageView>
       padding: const EdgeInsets.all(0),
       scrollDirection: Axis.horizontal,
       itemBuilder: (context, index) {
-        return Container(
-          height: 230,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: CupertinoColors.systemGrey3),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Expanded(
-                child: Stack(
-                  children: [
-                    //Back ground container
-                    Container(
-                      decoration: const BoxDecoration(
-                        borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(16),
-                            topRight: Radius.circular(16)),
-                        color: Color.fromARGB(255, 53, 109, 238),
-                      ),
-                      height: 180,
-                      width: 200,
-                    ),
-                    //Clipper container
-                    ClipPath(
-                      clipper: CustomClipPath(),
-                      child: Container(
-                        width: 200,
-                        height: 180,
+        return InkWell(
+          onTap: () {
+            setState(() {
+              projectIndex = index;
+              print(
+                  "project id after pressed: ${_projectsSnapId[projectIndex]}");
+            });
+          },
+          onLongPress: () {},
+          child: Container(
+            height: 230,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: CupertinoColors.systemGrey3),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Expanded(
+                  child: Stack(
+                    children: [
+                      //Back ground container
+                      Container(
                         decoration: const BoxDecoration(
                           borderRadius: BorderRadius.only(
                               topLeft: Radius.circular(16),
                               topRight: Radius.circular(16)),
-                          color: Color.fromARGB(255, 20, 76, 199),
+                          color: Color.fromARGB(255, 53, 109, 238),
+                        ),
+                        height: 180,
+                        width: 200,
+                      ),
+                      //Clipper container
+                      ClipPath(
+                        clipper: CustomClipPath(),
+                        child: Container(
+                          width: 200,
+                          height: 180,
+                          decoration: const BoxDecoration(
+                            borderRadius: BorderRadius.only(
+                                topLeft: Radius.circular(16),
+                                topRight: Radius.circular(16)),
+                            color: Color.fromARGB(255, 20, 76, 199),
+                          ),
                         ),
                       ),
-                    ),
-                    //Content Container
-                    Container(
-                      // height: 200,
-                      padding: const EdgeInsets.all(8),
-                      width: 200,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              IconButton(
-                                onPressed: () {},
-                                icon: const Icon(
-                                  Icons.search,
-                                  color: Colors.white,
-                                ),
-                                style: IconButton.styleFrom(
-                                  backgroundColor:
-                                      Colors.white.withOpacity(0.2),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
+                      //Content Container
+                      Container(
+                        // height: 200,
+                        padding: const EdgeInsets.all(8),
+                        width: 200,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                IconButton(
+                                  onPressed: () {},
+                                  icon: const Icon(
+                                    Icons.search,
+                                    color: Colors.white,
+                                  ),
+                                  style: IconButton.styleFrom(
+                                    backgroundColor:
+                                        Colors.white.withOpacity(0.2),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
                                   ),
                                 ),
+                                const Spacer(),
+                                MenuAnchor(
+                                  builder: (BuildContext context,
+                                      MenuController controller,
+                                      Widget? child) {
+                                    return IconButton(
+                                      padding: const EdgeInsets.all(0),
+                                      onPressed: () {
+                                        if (controller.isOpen) {
+                                          controller.close();
+                                        } else {
+                                          controller.open();
+                                        }
+                                        setState(() {
+                                          projectIndex = index;
+                                        });
+                                      },
+                                      icon: const Icon(
+                                        Icons.more_horiz,
+                                        color: Colors.white,
+                                      ),
+                                      alignment: Alignment.topCenter,
+                                    );
+                                  },
+                                  menuChildren: List<MenuItemButton>.generate(
+                                    2,
+                                    (menuIndex) => MenuItemButton(
+                                      onPressed: () {
+                                        menuIndex == 0
+                                            ? _deleteProject()
+                                            : _updateProject();
+                                        setState(() {
+                                          // projectIndex = 0;
+                                          // projectIndex = index;
+                                        });
+                                      },
+                                      child: Text(
+                                        menuIndex == 0 ? 'Delete' : 'Update',
+                                        style: const TextStyle(
+                                            fontFamily: 'Poppins'),
+                                      ),
+                                    ),
+                                  ),
+                                )
+                              ],
+                            ),
+                            const SizedBox(height: 25),
+                            //Project name
+                            Text(
+                              _projects[index].projectName,
+                              style: const TextStyle(
+                                color: Colors.white70,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
                               ),
-                              const Spacer(),
-                              IconButton(
-                                padding: const EdgeInsets.all(0),
-                                onPressed: () {},
-                                icon: const Icon(
-                                  Icons.more_horiz,
-                                  color: Colors.white,
-                                ),
-                                alignment: Alignment.topCenter,
-                              )
-                            ],
-                          ),
-                          const SizedBox(height: 25),
-                          //Project name
-                          Text(
-                            _projects[index].projectName,
-                            style: const TextStyle(
-                              color: Colors.white70,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
                             ),
-                          ),
-                          const SizedBox(height: 12),
-                          //Project total tasks
-                          const Text(
-                            '42 tasks',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          )
-                        ],
+                            const SizedBox(height: 12),
+                            //Project total tasks
+                            const Text(
+                              '42 tasks',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            )
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              // const SizedBox(height: 5),
-              Container(
-                // height: 25,
-                padding: const EdgeInsets.all(8),
-                width: 200,
-                child: Row(
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(24),
-                      child: Image.asset(
-                        'assets/avaters/avatar_5.jpg',
-                        width: 24,
-                        height: 24,
+                // const SizedBox(height: 5),
+                Container(
+                  // height: 25,
+                  padding: const EdgeInsets.all(8),
+                  width: 200,
+                  child: Row(
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(24),
+                        child: Image.asset(
+                          'assets/avaters/avatar_5.jpg',
+                          width: 24,
+                          height: 24,
+                        ),
                       ),
-                    ),
-                    const Spacer(),
-                    const Text(
-                      '%85',
-                      style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w900,
-                          fontFamily: 'Inter'),
-                    ),
-                  ],
+                      const Spacer(),
+                      const Text(
+                        '%85',
+                        style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w900,
+                            fontFamily: 'Inter'),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              Container(
-                padding: const EdgeInsets.all(8),
-                width: 200,
-                // height: 5,
-                child: const LinearProgressIndicator(
-                  value: 0.85,
-                  color: Colors.green,
-                  // valueColor: ,
-                ),
-              )
-            ],
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  width: 200,
+                  // height: 5,
+                  child: const LinearProgressIndicator(
+                    value: 0.85,
+                    color: Colors.green,
+                    // valueColor: ,
+                  ),
+                )
+              ],
+            ),
           ),
         );
       },
@@ -453,6 +544,7 @@ class _HomePageViewState extends State<HomePageView>
           ),
         );
       },
+      onLongPress: () {},
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
