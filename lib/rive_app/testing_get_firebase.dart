@@ -1,9 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:rive_learning/rive_app/models/project_info.dart';
 import 'package:rive_learning/rive_app/models/task.dart';
 import 'package:rive_learning/rive_app/services/project/project_service.dart';
+import 'package:rive_learning/rive_app/services/task/task_service.dart';
+import 'package:uuid/uuid.dart';
 
 class TestingGetFirebase extends StatefulWidget {
   const TestingGetFirebase({Key? key}) : super(key: key);
@@ -16,6 +19,7 @@ class _TestingGetFirebaseState extends State<TestingGetFirebase> {
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final ProjectService _projectService = ProjectService();
+  final TaskService _taskService = TaskService();
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +41,7 @@ class _TestingGetFirebaseState extends State<TestingGetFirebase> {
                 onPressed: () {
                   addProject();
                 },
-                child: const Text('Add'),
+                child: const Text('Add project'),
               ),
             ),
             Center(
@@ -56,6 +60,14 @@ class _TestingGetFirebaseState extends State<TestingGetFirebase> {
                 child: const Text('add sub task'),
               ),
             ),
+            Center(
+              child: ElevatedButton(
+                onPressed: () {
+                  testingGetTasks();
+                },
+                child: const Text('get task'),
+              ),
+            ),
           ],
         ),
       ),
@@ -64,6 +76,7 @@ class _TestingGetFirebaseState extends State<TestingGetFirebase> {
 
   void addProject() async {
     await _projectService.addProject(Project(
+        projectId: Uuid().v4(),
         projectPosition: 'Dev',
         projectName: 'hello world',
         projectDesc: 'hello',
@@ -91,16 +104,32 @@ class _TestingGetFirebaseState extends State<TestingGetFirebase> {
   }
 
   void testingAddTask() async {
-    await _projectService.addTaskToProject(
-        'FzF3yCuxC5UkIt3qBA2j',
-        ProjectTask(
-            taskName: 'testing',
-            taskFinished: false,
-            timeStamp: Timestamp.now()));
+    await _taskService.addTaskToProject(
+      'jKeMZdu58Tt9anzCeZOn',
+      ProjectTask(
+        taskId: Uuid().v4(),
+        taskName: 'testing',
+        taskFinished: false,
+        timeStamp: Timestamp.now(),
+      ),
+    );
+  }
+
+  void testingGetTasks() async {
+    final String currentUserId = _firebaseAuth.currentUser!.uid;
+    await _taskService.getTasks2('jKeMZdu58Tt9anzCeZOn').then((querySnapshot) {
+      print('Successfully');
+      for (var docSnapshot in querySnapshot.docs) {
+        print('${docSnapshot.id} => ${docSnapshot.data()['taskId']}');
+        // print(docSnapshot
+        // _list.add(docSnapshot.data());
+        print('success');
+      }
+    });
   }
 
   void testingAddSubTask() async {
-    await _projectService.addSubTaskToTask(
+    await _taskService.addSubTaskToTask(
         'FzF3yCuxC5UkIt3qBA2j',
         '10lhKof5dqhSOj63hkUy',
         SubTask(

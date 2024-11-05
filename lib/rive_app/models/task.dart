@@ -1,10 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ProjectTask {
-  final String? taskId;
-  final String taskName;
-  final bool taskFinished;
-  final Timestamp timeStamp;
+  String? taskId;
+  String taskName;
+  bool taskFinished;
+  Timestamp timeStamp;
 
   ProjectTask(
       {this.taskId,
@@ -23,13 +23,17 @@ class ProjectTask {
 }
 
 class SubTask {
-  final String? subTaskId;
-  final String subTaskName;
-  final bool subTaskFinished;
-  final Timestamp timeStamp;
+  String? subTaskId;
+  String subTaskName;
+  bool subTaskFinished;
+  Timestamp timeStamp;
 
-  SubTask({this.subTaskId, required this.subTaskFinished, required this.subTaskName, required this.timeStamp});
-  
+  SubTask(
+      {this.subTaskId,
+      required this.subTaskFinished,
+      required this.subTaskName,
+      required this.timeStamp});
+
   Map<String, dynamic> toMap() {
     return {
       'subTaskId': subTaskId,

@@ -19,18 +19,6 @@ class InnerList {
 }
 
 class _PersonProjectViewAlt3State extends State<PersonProjectViewAlt3> {
-  late List<InnerList> _lists;
-
-  @override
-  void initState() {
-    super.initState();
-    _lists = List.generate(2, (outerIndex) {
-      return InnerList(
-        name: outerIndex.toString(),
-        children: List.generate(3, (innerIndex) => '$outerIndex.$innerIndex'),
-      );
-    });
-  }
 
   @override
   Widget build(BuildContext context) {

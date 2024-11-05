@@ -4,10 +4,12 @@ import "package:provider/provider.dart";
 import "package:rive_learning/firebase_options.dart";
 import "package:rive_learning/rive_app/services/auth/auth_gate.dart";
 import "package:rive_learning/rive_app/services/auth/auth_service.dart";
+import "package:rive_learning/rive_app/services/notification_message/notification_service.dart";
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await NotificationService().initNotifications();
   runApp(
     ChangeNotifierProvider(
       create: (context) => AuthService(),

@@ -42,9 +42,8 @@ class Project {
   Timestamp timeStamp;
 
   Project(
-      {
-        this.projectId,
-        required this.projectPosition,
+      {this.projectId,
+      required this.projectPosition,
       required this.projectName,
       required this.projectDesc,
       required this.projectUrgent,
@@ -77,14 +76,14 @@ class Project {
         timeStamp: data?['timeStamp']);
   }
 
-  Map<String, dynamic> toFirestore(){
+  Map<String, dynamic> toFirestore() {
     return {
-      if(projectPosition != null) "projectPosition": projectPosition,
-      if(projectName != null) "projectName": projectName,
-      if(projectDesc != null) "projectDesc": projectDesc,
-      if(projectUrgent != null) "projectUrgent": projectUrgent,
-      if(projectFinished != null) "projectFinished": projectFinished,
-      if(timeStamp != null) "timeStamp": timeStamp,
+      if (projectPosition != null) "projectPosition": projectPosition,
+      if (projectName != null) "projectName": projectName,
+      if (projectDesc != null) "projectDesc": projectDesc,
+      if (projectUrgent != null) "projectUrgent": projectUrgent,
+      if (projectFinished != null) "projectFinished": projectFinished,
+      if (timeStamp != null) "timeStamp": timeStamp,
     };
   }
 }

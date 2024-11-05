@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:drag_and_drop_lists/drag_and_drop_lists.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -56,6 +55,9 @@ class _DragAnDropState extends State<DragAndDrop> {
         padding: const EdgeInsets.only(left: 12),
         child: DragAndDropLists(
           children: List.generate(_lists.length, (index) => _buildList(index)),
+          itemTargetOnAccept: (incoming, parentList, target) {
+            print('lmao');
+          },
           onItemReorder: _onItemReorder,
           onListReorder: _onListReorder,
           axis: Axis.horizontal,
@@ -166,7 +168,6 @@ class _DragAnDropState extends State<DragAndDrop> {
 
   _buildItem(String item, int index) {
     var project;
-    // print('index cc: $index');
     if (_projectList.isNotEmpty) {
       final _projecGet = _projectList[index];
       project = Project(
@@ -196,7 +197,8 @@ class _DragAnDropState extends State<DragAndDrop> {
       int oldItemIndex, int oldListIndex, int newItemIndex, int newListIndex) {
     setState(() {
       var movedItem = _lists[oldListIndex].children.removeAt(oldItemIndex);
-      _lists[newListIndex].children.insert(newItemIndex, movedItem);
+      // _lists[newListIndex].children.insert(newItemIndex, movedItem);
+      _lists[newListIndex].children.insert(newItemIndex, 'element ${oldItemIndex}');
     });
   }
 
@@ -248,7 +250,7 @@ class _DragAnDropState extends State<DragAndDrop> {
       int lastIndex = _lists[0].children.length;
 
       setState(() {
-        _lists[0].children.insert(lastIndex, "element");
+        _lists[0].children.insert(lastIndex, "element ${lastIndex}");
       });
     });
 

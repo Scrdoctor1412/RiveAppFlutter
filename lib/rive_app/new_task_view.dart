@@ -1,19 +1,25 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:rive_learning/rive_app/models/project_info.dart';
+import 'package:rive_learning/rive_app/models/task.dart';
 import 'package:uuid/uuid.dart';
-import 'package:uuid/v4.dart';
 
-class NewProjectView extends StatefulWidget {
-  const NewProjectView({Key? key}) : super(key: key);
+class NewTaskView extends StatefulWidget {
+  const NewTaskView({Key? key}) : super(key: key);
 
   @override
-  _NewProjectViewState createState() => _NewProjectViewState();
+  _NewTaskViewState createState() => _NewTaskViewState();
 }
 
-class _NewProjectViewState extends State<NewProjectView> {
-  Project tempProject = Project(projectId: Uuid().v4(),projectPosition: 'Dev', projectName: 'temp', projectDesc: 'temp', projectUrgent: 'low', projectFinished: false, timeStamp: Timestamp.now());
+class _NewTaskViewState extends State<NewTaskView> {
+  TextEditingController _dateController = TextEditingController();
+  TextEditingController _textController = TextEditingController();
+
+  final ProjectTask _tempTask = ProjectTask(
+      taskId: Uuid().v4(),
+      taskName: "taskName",
+      taskFinished: false,
+      timeStamp: Timestamp.now());
 
   @override
   Widget build(BuildContext context) {
@@ -23,15 +29,10 @@ class _NewProjectViewState extends State<NewProjectView> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildTextFieldForm('Project position'),
+          _buildTextFieldForm('Task name'),
           const SizedBox(height: 10),
-          _buildTextFieldForm('Project name'),
-          const SizedBox(height: 10),
-          _buildTextFieldForm('Project description'),
-          const SizedBox(height: 10),
-          _buildTextFieldForm('Project urgent'),          
-          const SizedBox(height: 17),
-          
+          _buildTextFieldForm('Task deadline'),
+          const SizedBox(height: 24),
           //Submit button
           Center(
             child: SizedBox(
@@ -40,17 +41,19 @@ class _NewProjectViewState extends State<NewProjectView> {
                 height: 50,
                 child: ElevatedButton(
                   onPressed: () {
-                    Navigator.of(context).pop(tempProject);
+                    Navigator.of(context).pop(_tempTask);
                   },
-                  child: Text(
-                    'Submit',
-                    style:
-                        TextStyle(color: Colors.white, fontFamily: 'Poppins'),
-                  ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blueAccent,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: const Text(
+                    'Submit',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontFamily: 'Poppins',
                     ),
                   ),
                 ),
@@ -60,6 +63,21 @@ class _NewProjectViewState extends State<NewProjectView> {
         ],
       ),
     );
+  }
+
+  Future<void> _selectDate() async {
+    DateTime? _picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2100),
+    );
+    if (_picked != null) {
+      setState(() {
+        _dateController.text = _picked.toString().split(" ")[0];
+        _tempTask.timeStamp = _picked as Timestamp;
+      });
+    }
   }
 
   Widget _buildTextFieldForm(String projectProps) {
@@ -78,21 +96,39 @@ class _NewProjectViewState extends State<NewProjectView> {
         SizedBox(
           height: 50,
           child: TextField(
+            controller: projectProps == 'Task deadline' ? _dateController : _textController,
             onChanged: (value) {
               // taskName = value;
-              switch (projectProps){
-                case 'Project position': tempProject.projectPosition = value; break;
-                case 'Project name': tempProject.projectName = value; break;
-                case 'Project description': tempProject.projectDesc = value; break;
-                case 'Project urgent': tempProject.projectUrgent = value; break;
-                default: break;
+              switch (projectProps) {
+                case 'Task name':
+                  _tempTask.taskName = value;
+                  break;
+                case 'Task deadline':
+                  _tempTask.timeStamp = Timestamp.now();
+                  break;
+                default:
+                  break;
               }
             },
             decoration: InputDecoration(
-              prefixIcon: const Icon(
-                Icons.text_fields_rounded,
-                color: CupertinoColors.systemGrey,
-              ),
+              label: projectProps == 'Task deadline'
+                  ? const Text(
+                      'Date',
+                      style: TextStyle(
+                        fontFamily: 'Poppins',
+                        color: CupertinoColors.systemGrey,
+                      ),
+                    )
+                  : null,
+              prefixIcon: projectProps == 'Task deadline'
+                  ? const Icon(
+                      Icons.calendar_today,
+                      color: CupertinoColors.systemGrey,
+                    )
+                  : const Icon(
+                      Icons.text_fields_rounded,
+                      color: CupertinoColors.systemGrey,
+                    ),
               filled: true,
               fillColor: CupertinoColors.systemGrey5,
               enabledBorder: OutlineInputBorder(
@@ -119,6 +155,8 @@ class _NewProjectViewState extends State<NewProjectView> {
             ),
             focusNode: FocusNode(),
             autofocus: true,
+            readOnly: projectProps == 'Task deadline' ? true : false,
+            onTap: projectProps == 'Task deadline' ? _selectDate : null,
           ),
         ),
       ],

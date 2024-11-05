@@ -98,7 +98,7 @@ class _OnboardingViewState extends State<OnboardingView>
                       width: 260,
                       padding: const EdgeInsets.only(bottom: 16),
                       child: const Text(
-                        'Learn design & code',
+                        'Work effort    & more',
                         style: TextStyle(fontSize: 60, fontFamily: 'Poppins'),
                       ),
                     ),
@@ -144,7 +144,7 @@ class _OnboardingViewState extends State<OnboardingView>
                                   children: [
                                     Icon(Icons.arrow_forward_rounded),
                                     Text(
-                                      'Start the course',
+                                      'Start working',
                                       style: TextStyle(
                                         fontSize: 16,
                                         fontFamily: 'Inter',

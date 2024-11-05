@@ -1,13 +1,22 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_image_stack/flutter_image_stack.dart';
+import 'package:intl/intl.dart';
 import 'package:rive_learning/rive_app/bottom_bar_page/home_page_content/task_view.dart';
+import 'package:rive_learning/rive_app/models/project_info.dart';
+import 'package:rive_learning/rive_app/models/task.dart';
+import 'package:rive_learning/rive_app/new_task_view.dart';
+import 'package:rive_learning/rive_app/services/project/project_service.dart';
+import 'package:rive_learning/rive_app/services/task/task_service.dart';
 import 'package:rive_learning/rive_app/theme.dart';
+import 'package:uuid/uuid.dart';
 
 class HomePageView extends StatefulWidget {
   const HomePageView({super.key, this.settingViews});
 
   final void Function()? settingViews;
+  static const route = '/home-view';
 
   @override
   State<HomePageView> createState() {
@@ -17,27 +26,127 @@ class HomePageView extends StatefulWidget {
 
 class _HomePageViewState extends State<HomePageView>
     with SingleTickerProviderStateMixin {
+  final ProjectService _projectService = ProjectService();
+  final TaskService _taskService = TaskService();
+
   List<ImageProvider> _images = [
-    ExactAssetImage('assets/avaters/avatar_1.jpg', scale: 3),
-    ExactAssetImage('assets/avaters/avatar_2.jpg', scale: 3),
-    ExactAssetImage('assets/avaters/avatar_3.jpg', scale: 3),
+    const ExactAssetImage('assets/avaters/avatar_1.jpg', scale: 3),
+    const ExactAssetImage('assets/avaters/avatar_2.jpg', scale: 3),
+    const ExactAssetImage('assets/avaters/avatar_3.jpg', scale: 3),
   ];
 
-  List<String> taskNames = [
-    'Research for a hospital app',
-    'Landing page design',
-    'Web app design system',
-    'Dasboard design fast'
-  ];
+  // List<String> taskNames = [
+  //   'Research for a hospital app',
+  //   'Landing page design',
+  //   'Web app design system',
+  //   'Dasboard design fast',
+  //   'lmao'
+  // ];
 
-  List<bool> taskCheck = [];
+  List<Project> _projects = [];
+  List<String> _projectsSnapId = [];
+  List<String> _tasksSnapId = [];
+  List<List<ProjectTask>> _tasks = [];
+
+  int projectIndex = 0;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    taskCheck = List.filled(taskNames.length, false, growable: true);
-    print(taskCheck);
+    initProjects();
+  }
+
+  void initProjects() async {
+    await _projectService.getAllProjects2().then((querySnapshot) {
+      print("Successfully completed");
+      for (var docSnapshot in querySnapshot.docs) {
+        var data = docSnapshot.data();
+        _projects.add(
+          Project(
+            projectId: data['projectId'],
+            projectPosition: data['projectPosition'],
+            projectName: data['projectName'],
+            projectDesc: data['projectDesc'],
+            projectUrgent: data['projectUrgent'],
+            projectFinished: data['projectFinished'],
+            timeStamp: data['timeStamp'],
+          ),
+        );
+        _projectsSnapId.add(docSnapshot.id);
+        print(docSnapshot.id);
+        //Add tasks of a project to a list
+        initProjectTasks(docSnapshot.id);
+      }
+      setState(() {
+        //code
+        // projectIndex = 0;
+        // initProjectTasks(_projectsSnapId[projectIndex]);
+      });
+    });
+  }
+
+  void initProjectTasks(String projectId) async {
+    await _taskService.getTasks2(projectId).then((querySnapshot) {
+      List<ProjectTask> temp = [];
+      print("Successfully completed tasks");
+      for (var docSnapshot in querySnapshot.docs) {
+        var data = docSnapshot.data();
+        print('data task id: ${docSnapshot.id}');
+        temp.add(
+          ProjectTask(
+            taskId: data['taskId'],
+            taskName: data['taskName'],
+            taskFinished: data['taskFinished'],
+            timeStamp: data['timeStamp'],
+          ),
+        );
+        _tasksSnapId.add(docSnapshot.id);
+      }
+      _tasks.add(temp);
+    });
+    print(_tasks);
+    setState(() {
+
+    });
+  }
+
+  void _addNewTask(String projectId, ProjectTask newTask) async {
+    print('okay');
+    await _taskService.addTaskToProject(projectId, newTask).then((_) {
+      setState(() {
+        _tasks[projectIndex].add(newTask);
+      });
+    });
+  }
+
+  void _toNewTask() async {
+    final dynamic res = await showModalBottomSheet(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (context) {
+        return Padding(
+          padding: MediaQuery.of(context).viewInsets,
+          child: Container(
+            child: const FractionallySizedBox(
+              heightFactor: 0.4,
+              child: NewTaskView(),
+            ),
+          ),
+        );
+      },
+      backgroundColor: Colors.white,
+    );
+
+    if (!context.mounted) return;
+    final newTask = res as ProjectTask;
+    _addNewTask(_projectsSnapId[projectIndex], newTask);
+    // print(newTask.timeStamp);
+
+    // final newProject = res as Project;
+    // print(newProject.projectName);
+    // addProject(newProject);
   }
 
   @override
@@ -105,200 +214,232 @@ class _HomePageViewState extends State<HomePageView>
                     child: const Text(
                       'See all',
                       style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w900,
-                          fontFamily: 'Inter',
-                          color: Colors.blueAccent),
-                    ),
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.only(left: 24),
-                  height: 233,
-                  child: ListView.separated(
-                    // padding: const ,
-                    padding: const EdgeInsets.all(0),
-                    scrollDirection: Axis.horizontal,
-                    itemBuilder: (context, index) {
-                      return Container(
-                        height: 230,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(16),
-                          border:
-                              Border.all(color: CupertinoColors.systemGrey3),
-                        ),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Expanded(
-                              child: Stack(
-                                children: [
-                                  //Back ground container
-                                  Container(
-                                    decoration: const BoxDecoration(
-                                      borderRadius: BorderRadius.only(
-                                          topLeft: Radius.circular(16),
-                                          topRight: Radius.circular(16)),
-                                      color: Color.fromARGB(255, 53, 109, 238),
-                                    ),
-                                    height: 180,
-                                    width: 200,
-                                  ),
-                                  //Clipper container
-                                  ClipPath(
-                                    clipper: CustomClipPath(),
-                                    child: Container(
-                                      width: 200,
-                                      height: 180,
-                                      decoration: const BoxDecoration(
-                                        borderRadius: BorderRadius.only(
-                                            topLeft: Radius.circular(16),
-                                            topRight: Radius.circular(16)),
-                                        color: Color.fromARGB(255, 20, 76, 199),
-                                      ),
-                                    ),
-                                  ),
-                                  //Content Container
-                                  Container(
-                                    // height: 200,
-                                    padding: const EdgeInsets.all(8),
-                                    width: 200,
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            IconButton(
-                                              onPressed: () {},
-                                              icon: const Icon(
-                                                Icons.search,
-                                                color: Colors.white,
-                                              ),
-                                              style: IconButton.styleFrom(
-                                                backgroundColor: Colors.white
-                                                    .withOpacity(0.2),
-                                                shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(8),
-                                                ),
-                                              ),
-                                            ),
-                                            const Spacer(),
-                                            IconButton(
-                                              padding: const EdgeInsets.all(0),
-                                              onPressed: () {},
-                                              icon: const Icon(
-                                                Icons.more_horiz,
-                                                color: Colors.white,
-                                              ),
-                                              alignment: Alignment.topCenter,
-                                            )
-                                          ],
-                                        ),
-                                        const SizedBox(height: 25),
-                                        const Text(
-                                          'Research for mobile project',
-                                          style: TextStyle(
-                                            color: Colors.white70,
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w700,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 12),
-                                        const Text(
-                                          '42 tasks',
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w700,
-                                          ),
-                                        )
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            // const SizedBox(height: 5),
-                            Container(
-                              // height: 25,
-                              padding: const EdgeInsets.all(8),
-                              width: 200,
-                              child: Row(
-                                children: [
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(24),
-                                    child: Image.asset(
-                                      'assets/avaters/avatar_5.jpg',
-                                      width: 24,
-                                      height: 24,
-                                    ),
-                                  ),
-                                  const Spacer(),
-                                  const Text(
-                                    '%85',
-                                    style: TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w900,
-                                        fontFamily: 'Inter'),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.all(8),
-                              width: 200,
-                              // height: 5,
-                              child: const LinearProgressIndicator(
-                                value: 0.85,
-                                color: Colors.green,
-                                // valueColor: ,
-                              ),
-                            )
-                          ],
-                        ),
-                      );
-                    },
-                    separatorBuilder: (context, index) => const SizedBox(
-                      width: 24,
-                    ),
-                    itemCount: 12,
-                  ),
-                ),
-                const SizedBox(height: 40),
-                const Padding(
-                  padding: const EdgeInsets.only(left: 24),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: const Text(
-                      'Your tasks',
-                      style: TextStyle(
-                        fontSize: 18,
+                        fontSize: 16,
                         fontWeight: FontWeight.w900,
                         fontFamily: 'Inter',
+                        color: Colors.blueAccent,
                       ),
                     ),
                   ),
                 ),
-                const SizedBox(height: 20),
-                ListView.separated(
-                  physics: const NeverScrollableScrollPhysics(),
-                  shrinkWrap: true,
-                  padding: const EdgeInsets.only(left: 24, right: 24),
-                  itemBuilder: _buildTaskItem,
-                  separatorBuilder: (context, index) => const SizedBox(
-                    height: 15,
-                  ),
-                  itemCount: taskNames.length,
+                //Your projects list view
+                Container(
+                  padding: const EdgeInsets.only(left: 24),
+                  height: 233,
+                  child: _buildProjectList(),
                 ),
+                const SizedBox(height: 40),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Row(
+                      children: [
+                        const Text(
+                          'Your tasks',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w900,
+                            fontFamily: 'Inter',
+                          ),
+                        ),
+                        const Spacer(),
+                        InkWell(
+                          onTap: () {
+                            // setState(() {
+                            //   _addNewTask(_projectsSnapId[projectIndex]);
+                            // });
+                            // _addNewTask(_projectsSnapId[projectIndex]);
+                            // setState(() {});
+                            _toNewTask();
+                          },
+                          child: const Text(
+                            'Add tasks',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w900,
+                              fontFamily: 'Inter',
+                              color: Colors.blueAccent,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                _tasks.length == 0
+                    ? Center(
+                        child: Text('Empty'),
+                      )
+                    : ListView.separated(
+                        physics: const NeverScrollableScrollPhysics(),
+                        shrinkWrap: true,
+                        padding: const EdgeInsets.only(left: 24, right: 24),
+                        itemBuilder: _buildTaskItem,
+                        separatorBuilder: (context, index) => const SizedBox(
+                          height: 15,
+                        ),
+                        itemCount: _tasks[projectIndex].length,
+                      ),
               ],
             ),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildProjectList() {
+    return ListView.separated(
+      // padding: const ,
+      padding: const EdgeInsets.all(0),
+      scrollDirection: Axis.horizontal,
+      itemBuilder: (context, index) {
+        return Container(
+          height: 230,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: CupertinoColors.systemGrey3),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Expanded(
+                child: Stack(
+                  children: [
+                    //Back ground container
+                    Container(
+                      decoration: const BoxDecoration(
+                        borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(16),
+                            topRight: Radius.circular(16)),
+                        color: Color.fromARGB(255, 53, 109, 238),
+                      ),
+                      height: 180,
+                      width: 200,
+                    ),
+                    //Clipper container
+                    ClipPath(
+                      clipper: CustomClipPath(),
+                      child: Container(
+                        width: 200,
+                        height: 180,
+                        decoration: const BoxDecoration(
+                          borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(16),
+                              topRight: Radius.circular(16)),
+                          color: Color.fromARGB(255, 20, 76, 199),
+                        ),
+                      ),
+                    ),
+                    //Content Container
+                    Container(
+                      // height: 200,
+                      padding: const EdgeInsets.all(8),
+                      width: 200,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              IconButton(
+                                onPressed: () {},
+                                icon: const Icon(
+                                  Icons.search,
+                                  color: Colors.white,
+                                ),
+                                style: IconButton.styleFrom(
+                                  backgroundColor:
+                                      Colors.white.withOpacity(0.2),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                              ),
+                              const Spacer(),
+                              IconButton(
+                                padding: const EdgeInsets.all(0),
+                                onPressed: () {},
+                                icon: const Icon(
+                                  Icons.more_horiz,
+                                  color: Colors.white,
+                                ),
+                                alignment: Alignment.topCenter,
+                              )
+                            ],
+                          ),
+                          const SizedBox(height: 25),
+                          //Project name
+                          Text(
+                            _projects[index].projectName,
+                            style: const TextStyle(
+                              color: Colors.white70,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          //Project total tasks
+                          const Text(
+                            '42 tasks',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          )
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // const SizedBox(height: 5),
+              Container(
+                // height: 25,
+                padding: const EdgeInsets.all(8),
+                width: 200,
+                child: Row(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(24),
+                      child: Image.asset(
+                        'assets/avaters/avatar_5.jpg',
+                        width: 24,
+                        height: 24,
+                      ),
+                    ),
+                    const Spacer(),
+                    const Text(
+                      '%85',
+                      style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w900,
+                          fontFamily: 'Inter'),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.all(8),
+                width: 200,
+                // height: 5,
+                child: const LinearProgressIndicator(
+                  value: 0.85,
+                  color: Colors.green,
+                  // valueColor: ,
+                ),
+              )
+            ],
+          ),
+        );
+      },
+      separatorBuilder: (context, index) => const SizedBox(
+        width: 24,
+      ),
+      itemCount: _projects.length,
     );
   }
 
@@ -344,25 +485,30 @@ class _HomePageViewState extends State<HomePageView>
             leading: IconButton(
               onPressed: () {
                 setState(() {
-                  taskCheck[index] = !taskCheck[index];
+                  //change finished state for a task
+                  _tasks[projectIndex][index].taskFinished =
+                      !_tasks[projectIndex][index].taskFinished;
                 });
               },
               icon: Icon(
-                taskCheck[index] ? Icons.check_circle : Icons.circle_outlined,
+                _tasks[projectIndex][index].taskFinished
+                    ? Icons.check_circle
+                    : Icons.circle_outlined,
                 color: Colors.green,
                 size: 32,
               ),
             ),
             title: Text(
-              taskNames[index],
+              _tasks[projectIndex][index].taskName,
               style: const TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w900,
                   fontFamily: 'Inter'),
             ),
-            subtitle: const Text(
-              'Today, 03:45 PM',
-              style: TextStyle(
+            subtitle: Text(
+              DateFormat('EEE, MMM d, y - h:mm a')
+                  .format(_tasks[projectIndex][index].timeStamp.toDate()),
+              style: const TextStyle(
                 color: CupertinoColors.systemGrey,
                 fontWeight: FontWeight.w700,
                 fontFamily: 'Inter',
@@ -388,7 +534,7 @@ class _HomePageViewState extends State<HomePageView>
 class CustomClipPath extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {
-    final path = Path();
+    // final path = Path();
     Path path_0 = Path();
     path_0.moveTo(size.width * -0.0037500, size.height * -0.0040000);
     path_0.lineTo(size.width * -0.0058375, size.height * 0.6088400);

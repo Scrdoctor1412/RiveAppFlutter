@@ -137,7 +137,8 @@ class _SigninViewState extends State<SigninView> {
                         ),
                         const SizedBox(height: 34),
                         const Text(
-                          'Access to 240+ hours of content. Learn design and codem by building real apps with Flutter and Swift.',
+                          // 'Access to 240+ hours of content. Learn design and code by building real apps with Flutter and Swift.',
+                          'Access to your working progress and continue to work effectively by tracking this app',
                           style: TextStyle(
                             fontFamily: 'Inter',
                             fontSize: 17,
