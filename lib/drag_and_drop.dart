@@ -189,26 +189,24 @@ class _DragAnDropState extends State<DragAndDrop> {
       int oldItemIndex, int oldListIndex, int newItemIndex, int newListIndex) {
     setState(() {
       var movedItem = _lists[oldListIndex].children.removeAt(oldItemIndex);
-      // _lists[newListIndex].children.insert(newItemIndex, movedItem);
-      print('old item index: $oldItemIndex');
-      print('new item index: $newItemIndex');
       _lists[newListIndex]
           .children
           .insert(newItemIndex, movedItem); //drag n drop list
 
+      //Handle reordering for data from column 1 to 2 and back
       if(oldListIndex == newListIndex){
         return;
       }
       else if (oldListIndex == 0) {
         _inWorkList[oldItemIndex]['projectFinished'] = true;
         _completedList.insert(
-            newItemIndex, _inWorkList[oldItemIndex]); //complete list
-        _inWorkList.removeAt(oldItemIndex);
+            newItemIndex, _inWorkList[oldItemIndex]); //add new item to complete list
+        _inWorkList.removeAt(oldItemIndex);  //remove the item just add to complete list in inwork list
       }else if(oldListIndex == 1){
         _inWorkList[oldItemIndex]['projectFinished'] = false;
         _inWorkList.insert(
-            newItemIndex, _inWorkList[oldItemIndex]); //complete list
-        _completedList.removeAt(oldItemIndex);
+            newItemIndex, _inWorkList[oldItemIndex]); //add new item to inwork list
+        _completedList.removeAt(oldItemIndex);  //remove the item just add to inwork list in complete list
       }
     });
   }
@@ -258,18 +256,12 @@ class _DragAnDropState extends State<DragAndDrop> {
         _projectList.add(docSnapshot.data());
         print('success');
       }
-      // int lastIndex = _lists[0].children.length;
-
       setState(() {
-        // _lists[0].children.insert(0, newProject.toString());
         _lists.clear();
         _projectList.clear();
         _inWorkList.clear();
         _completedList.clear();
         initProjects();
-
-        // _lists[0].children.add(newProject.toString());
-        // _inWorkList.add(newProject as Map<String, dynamic>);
       });
     });
   }

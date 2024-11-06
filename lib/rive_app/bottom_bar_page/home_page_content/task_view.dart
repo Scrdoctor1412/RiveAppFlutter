@@ -1,11 +1,15 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_image_stack/flutter_image_stack.dart';
+import 'package:intl/intl.dart';
 import 'package:rive_learning/rive_app/bottom_bar_page/home_page_content/new_sub_task.dart';
+import 'package:rive_learning/rive_app/models/task.dart';
 import 'package:rive_learning/rive_app/theme.dart';
 
 class TaskView extends StatefulWidget {
-  const TaskView({Key? key}) : super(key: key);
+  const TaskView({Key? key, required this.task}) : super(key: key);
+
+  final ProjectTask task;
 
   @override
   _TaskViewState createState() => _TaskViewState();
@@ -109,9 +113,10 @@ class _TaskViewState extends State<TaskView> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'iOS Mobile App',
-                              style: TextStyle(
+                            Text(
+                              // 'iOS Mobile App',
+                              widget.task.taskName,
+                              style: const TextStyle(
                                 fontFamily: 'Poppins',
                                 fontSize: 24,
                                 color: Color(0xff4e4879),
@@ -211,15 +216,15 @@ class _TaskViewState extends State<TaskView> {
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children: [
-                                  const Flexible(
+                                  Flexible(
                                     flex: 1,
                                     child: Column(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        Text('Deadline'),
-                                        ListTile(
+                                        const Text('Deadline'),
+                                        const ListTile(
                                           contentPadding: EdgeInsets.all(0),
                                           leading: Icon(
                                             Icons.timer,
@@ -236,13 +241,14 @@ class _TaskViewState extends State<TaskView> {
                                         ),
                                         ListTile(
                                           contentPadding: EdgeInsets.all(0),
-                                          leading: Icon(
+                                          leading: const Icon(
                                             Icons.calendar_month,
                                             color: Color(0xff4e4879),
                                           ),
                                           title: Text(
-                                            'August 25, 2022',
-                                            style: TextStyle(
+                                            // 'August 25, 2022',
+                                            DateFormat('MMM d, y').format(widget.task.timeStamp.toDate()) as String,
+                                            style: const TextStyle(
                                                 fontSize: 16.5,
                                                 fontFamily: 'Inter',
                                                 fontWeight: FontWeight.w900,

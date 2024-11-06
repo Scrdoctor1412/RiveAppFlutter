@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_image_stack/flutter_image_stack.dart';
 import 'package:intl/intl.dart';
 import 'package:rive_learning/rive_app/add_new_view/new_project_view.dart';
+import 'package:rive_learning/rive_app/add_new_view/options_choosing_view.dart';
 import 'package:rive_learning/rive_app/bottom_bar_page/home_page_content/task_view.dart';
 import 'package:rive_learning/rive_app/models/project_info.dart';
 import 'package:rive_learning/rive_app/models/task.dart';
@@ -35,17 +36,9 @@ class _HomePageViewState extends State<HomePageView> {
     const ExactAssetImage('assets/avaters/avatar_3.jpg', scale: 3),
   ];
 
-  // List<String> taskNames = [
-  //   'Research for a hospital app',
-  //   'Landing page design',
-  //   'Web app design system',
-  //   'Dasboard design fast',
-  //   'lmao'
-  // ];
-
   List<Project> _projects = [];
   List<String> _projectsSnapId = [];
-  List<String> _tasksSnapId = [];
+  List<List<String>> _tasksSnapId = [];
   List<List<ProjectTask>> _tasks = [];
   List<Map<String, List<ProjectTask>>> _tasksDict = [];
 
@@ -60,31 +53,19 @@ class _HomePageViewState extends State<HomePageView> {
     init();
   }
 
+  void rebuildAllChildren(BuildContext context) {
+    void rebuild(Element el) {
+      el.markNeedsBuild();
+      el.visitChildren(rebuild);
+    }
+
+    (context as Element).visitChildren(rebuild);
+  }
+
   void init() async {
     initProjects();
 
-    Future.delayed(const Duration(seconds: 1)).then((val) async => {
-          for (var id in _projectsSnapId)
-            {
-              await _taskService.getTasks2(id).then((QuerySnapshot) {
-                List<ProjectTask> tempList = [];
-                print('Successflly');
-                for (var docSnapShot in QuerySnapshot.docs) {
-                  var tempVar = ProjectTask(
-                      taskId: docSnapShot.data()['taskId'],
-                      taskName: docSnapShot.data()['taskName'],
-                      taskFinished: docSnapShot.data()['taskFinished'],
-                      timeStamp: docSnapShot.data()['timeStamp']);
-                  print(tempVar.taskName);
-                  _tasksSnapId.add(docSnapShot.id);
-                  tempList.add(tempVar);
-                }
-                setState(() {
-                  _tasks.add(tempList);
-                });
-              })
-            }
-        });
+    initTasks();
   }
 
   void initProjects() async {
@@ -110,11 +91,43 @@ class _HomePageViewState extends State<HomePageView> {
     });
   }
 
+  void initTasks() async {
+    Future.delayed(const Duration(seconds: 1)).then((val) async => {
+          for (var id in _projectsSnapId)
+            {
+              await _taskService.getTasks2(id).then((QuerySnapshot) {
+                List<ProjectTask> tempList = [];
+                List<String> tempStringList = [];
+                print('Successflly');
+                for (var docSnapShot in QuerySnapshot.docs) {
+                  var tempVar = ProjectTask(
+                      taskId: docSnapShot.data()['taskId'],
+                      taskName: docSnapShot.data()['taskName'],
+                      taskFinished: docSnapShot.data()['taskFinished'],
+                      timeStamp: docSnapShot.data()['timeStamp']);
+                  print(tempVar.taskName);
+                  tempStringList.add(docSnapShot.id);
+                  tempList.add(tempVar);
+                }
+                setState(() {
+                  _tasksSnapId.add(tempStringList);
+                  _tasks.add(tempList);
+                });
+              })
+            }
+        });
+  }
+
   void _addNewTask(String projectId, ProjectTask newTask) async {
     print('okay');
     await _taskService.addTaskToProject(projectId, newTask).then((_) {
       setState(() {
-        _tasks[projectIndex].add(newTask);
+        // _tasks[projectIndex].add(newTask);
+        // _projects.clear();
+        // _projectsSnapId.clear();
+        _tasks.clear();
+        _tasksSnapId.clear();
+        initTasks();
       });
     });
   }
@@ -130,10 +143,7 @@ class _HomePageViewState extends State<HomePageView> {
           child: Container(
             child: FractionallySizedBox(
               heightFactor: 0.4,
-              child: NewTaskView(
-                projectsId: _projectsSnapId,
-                tasksId: _tasksSnapId,
-              ),
+              child: NewTaskView(),
             ),
           ),
         );
@@ -186,18 +196,25 @@ class _HomePageViewState extends State<HomePageView> {
       backgroundColor: Colors.white,
     );
 
-    if (!context.mounted) return;
+    // if (!context.mounted) return;
     final newProject = res as Project;
-    await _projectService.updateProject(
-        _projectsSnapId[projectIndex], newProject).then((_) => {
-         ScaffoldMessenger.of(context)
-                  .showSnackBar(SnackBar(content: Text("update successfully"))), 
-        });
-    setState(() { init(); });
+    await _projectService
+        .updateProject(_projectsSnapId[projectIndex], newProject)
+        .then((_) => {
+              ScaffoldMessenger.of(context)
+                  .showSnackBar(const SnackBar(content: Text("update successfully"))),
+            });
+    setState(() {
+      _projects.clear();
+      // _tasksSnapId.clear();
+      init();
+      // rebuildAllChildren(context);
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    // rebuildAllChildren(context);
     return Scaffold(
       body: SafeArea(
         child: Container(
@@ -536,15 +553,57 @@ class _HomePageViewState extends State<HomePageView> {
 
   Widget _buildTaskItem(BuildContext context, int index) {
     return GestureDetector(
+      //task on click
       onTap: () {
         // return ;
         Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (context) => const TaskView(),
+            builder: (context) => TaskView(task: _tasks[projectIndex][index]),
           ),
         );
       },
-      onLongPress: () {},
+      //task long press
+      onLongPress: () async {
+        final dynamic res = await showModalBottomSheet(
+          context: context,
+          showDragHandle: true,
+          isScrollControlled: true,
+          builder: (context) {
+            return Padding(
+              padding: MediaQuery.of(context).viewInsets,
+              child: Container(
+                child: FractionallySizedBox(
+                  heightFactor: 0.2,
+                  child: OptionsChoosingView(
+                    projectsSnapId: _projectsSnapId[projectIndex],
+                    tasksSnapId: _tasksSnapId[projectIndex][index],
+                  ),
+                ),
+              ),
+            );
+          },
+          backgroundColor: Colors.white,
+        );
+
+        if (!context.mounted) return;
+        final int flag = res;
+        if (flag == 1) {
+          setState(() {
+            _tasks.clear();
+            _tasksSnapId.clear();
+            initTasks();
+          });
+        }else if(flag == 2){
+          setState(() {
+           _tasks.clear();
+            _tasksSnapId.clear();
+            initTasks(); 
+          });
+        } 
+        else {
+          return;
+        }
+      },
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),

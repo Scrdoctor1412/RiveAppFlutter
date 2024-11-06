@@ -53,6 +53,46 @@ class TaskService extends ChangeNotifier {
         .get();
   }
 
+  //DELETE TASK
+  Future<int> deleteTask(String projectId, String taskId) async {
+    final String currentUserId = _firebaseAuth.currentUser!.uid;
+    int flag = -1;
+    await _firestore
+        .collection('project_store')
+        .doc(currentUserId)
+        .collection('projects')
+        .doc(projectId)
+        .collection('tasks')
+        .doc(taskId)
+        .delete()
+        .then(
+          (doc) => flag = 1,
+          onError: (e) => print("Error deleting document"),
+        );
+    return flag;
+  }
+
+  //UPDATE TASK
+  Future<void> updateTask(String projectId, String taskId, ProjectTask taskUpdate) async {
+    final String currentUserId = _firebaseAuth.currentUser!.uid;
+    await _firestore
+        .collection('project_store')
+        .doc(currentUserId)
+        .collection('projects')
+        .doc(projectId)
+        .collection('tasks')
+        .doc(taskId)
+        .update({
+          "taskName": taskUpdate.taskName,
+          "taskFinished": taskUpdate.taskFinished,
+          "timeStamp": taskUpdate.timeStamp,
+        })
+        .then(
+          (doc) => print('update successfuly'),
+          onError: (e) => print("Error deleting document"),
+        );
+  }
+
   //ADD SUBTASK TO TASK OF A PROJECT
   Future<void> addSubTaskToTask(
       String projectId, String taskId, SubTask subTask) async {

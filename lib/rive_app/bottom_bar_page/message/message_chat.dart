@@ -284,7 +284,7 @@ class _MessageChatState extends State<MessageChat> {
           height: 200,
           child: ScrollablePositionedList.builder(
             itemScrollController: _scrollController,
-            initialScrollIndex: 9999,
+            initialScrollIndex: snapshot.data!.docs.length,
             // reverse: true,
             itemBuilder: (context, index) {
               return _buildMessageItem(snapshot.data!.docs[index]);

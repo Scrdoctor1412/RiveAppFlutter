@@ -5,10 +5,9 @@ import 'package:rive_learning/rive_app/models/task.dart';
 import 'package:uuid/uuid.dart';
 
 class NewTaskView extends StatefulWidget {
-  const NewTaskView({Key? key, required this.projectsId, required this.tasksId}) : super(key: key);
+  const NewTaskView({Key? key}) : super(key: key);
 
-  final List<String> projectsId;
-  final List<String> tasksId;
+  
 
   @override
   _NewTaskViewState createState() => _NewTaskViewState();
@@ -78,7 +77,8 @@ class _NewTaskViewState extends State<NewTaskView> {
     if (_picked != null) {
       setState(() {
         _dateController.text = _picked.toString().split(" ")[0];
-        _tempTask.timeStamp = _picked as Timestamp;
+        print(_picked);
+        _tempTask.timeStamp = Timestamp.fromDate(_picked);
       });
     }
   }

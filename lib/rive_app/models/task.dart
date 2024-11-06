@@ -1,9 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/rendering.dart';
 
 class ProjectTask {
   String? taskId;
   String taskName;
+
   bool taskFinished;
+  Timestamp? startDay;
   Timestamp timeStamp;
 
   ProjectTask(
